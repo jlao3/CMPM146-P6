@@ -78,6 +78,7 @@ class Individual_Grid(object):
     # Create zero or more children from self and other
     def generate_children(self, other):
         new_genome = copy.deepcopy(self.genome)
+        mate_genome = copy.deepcopy(other.genome)
         # Leaving first and last columns alone...
         # do crossover with other
         left = 1
@@ -347,15 +348,46 @@ def generate_successors(population):
     results = []
     # STUDENT Design and implement this
     # Hint: Call generate_children() on some individuals and fill up results.
-
-    while len(results) < len(population):
-        Parent = random.choice(population)
-        Mate = random.choice(population)
-        while Mate is Parent:
+    
+    if random.random() <= 0.5: # random selection
+        while len(results) < len(population):
+            Parent = random.choice(population)
             Mate = random.choice(population)
-        child = Parent.generate_children(Mate)
-        results.append(child[0])
-        #results.append(child[1])
+            child = Parent.generate_children(Mate)
+            results.append(child[0])
+            #results.append(child[1])
+
+    else: # roulette selection
+
+        '''
+        Calculate S = the sum of a finesses.
+        Generate a random number between 0 and S.
+        Starting from the top of the population, keep adding the finesses to the partial sum P, till P<S.
+        The individual for which P exceeds S is the chosen individual.
+        '''
+
+        total_fitness = 0.0
+        for Individual in population:
+            total_fitness += Individual._fitness
+
+        while len(results) < len(population):
+            first_choice = random.uniform(0, total_fitness)
+            second_choice = random.uniform(0, total_fitness)
+
+            for Parent in population:
+                first_choice += Parent._fitness
+                if first_choice < total_fitness:
+                    chosen_parent = Parent
+
+            for Mate in population:
+                second_choice += Mate._fitness
+                if second_choice < total_fitness:
+                    chosen_mate = Mate
+
+            child = chosen_parent.generate_children(chosen_mate)
+            results.append(child[0])
+            #results.append(child[1])     
+               
     return results
 
 
