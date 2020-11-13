@@ -78,18 +78,30 @@ class Individual_Grid(object):
     # Create zero or more children from self and other
     def generate_children(self, other):
         new_genome = copy.deepcopy(self.genome)
-        mate_genome = copy.deepcopy(other.genome)
+        sibling_genome = copy.deepcopy(other.genome)
         # Leaving first and last columns alone...
         # do crossover with other
         left = 1
-        right = width - 1
+        right = width - 1 # Such that nothing prints out on flag position
         for y in range(height):
             for x in range(left, right):
                 # STUDENT Which one should you take?  Self, or other?  Why?
                 # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
-                pass
+                first_child = other.genome[y][x]
+                if first_child != '-':
+                    new_genome[y][x] = '-'
+                else:
+                    new_genome[y][x] = first_child
+
+                sibling_child = self.genome[y][x]
+                if sibling_child == '-' and y <= 4:
+                    sibling_genome[y][x] = 'B'
+                else:
+                    sibling_genome[y][x] = sibling_child
         # do mutation; note we're returning a one-element tuple here
-        return (Individual_Grid(new_genome),)
+        new_genome = self.mutate(new_genome)
+        sibling_genome = self.mutate(sibling_genome)
+        return (Individual_Grid(new_genome), Individual_Grid(sibling_genome))
 
     # Turn the genome into a level string (easy for this genome)
     def to_level(self):
@@ -355,7 +367,7 @@ def generate_successors(population):
             Mate = random.choice(population)
             child = Parent.generate_children(Mate)
             results.append(child[0])
-            #results.append(child[1])
+            results.append(child[1])
 
     else: # roulette selection
 
@@ -386,7 +398,7 @@ def generate_successors(population):
 
             child = chosen_parent.generate_children(chosen_mate)
             results.append(child[0])
-            #results.append(child[1])     
+            results.append(child[1])     
                
     return results
 
