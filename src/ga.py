@@ -87,17 +87,61 @@ class Individual_Grid(object):
             for x in range(left, right):
                 # STUDENT Which one should you take?  Self, or other?  Why?
                 # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
-                first_child = other.genome[y][x]
-                if first_child != '-':
-                    new_genome[y][x] = '-'
-                else:
-                    new_genome[y][x] = first_child
+                
+                # USING OTHER.GENOME
+                child = other.genome[y][x]
+                if child == "T":
+                        if random.random() < 0.3 or new_genome[y][x-1] == "T" or new_genome[y][x-1] == "|":
+                            child = "o"
+                        else:
+                            i = 1
+                            while len(new_genome) > y+i+1:
+                                if random.random() < 0.5 or new_genome[y+i][x-1] == "|" or new_genome[y+i][x-1] != "T":
+                                    belowPipe = random.choice(options)
+                                    if belowPipe != "o" and belowPipe != "-" and belowPipe != "E":
+                                        new_genome[y+i][x] = belowPipe
+                                        new_genome[y+i][x+1] = belowPipe
+                                        break 
+                                else:
+                                    new_genome[y+i][x] = "|"
+                                    i += 1
+                if child == "|":
+                    child = "o"
+                if y != 0 and (new_genome[y-1][x] == "T" or new_genome[y-1][x] == "|" or new_genome[y-1][x-1] == "T" or new_genome[y-1][x-1] == "|"):
+                    if child == "o" or child == "-" or child == "E":
+                        if random.random() > .02:
+                            child = "B"
+                        else:
+                            child = "T"
+                new_genome[y][x] = child
 
-                sibling_child = self.genome[y][x]
-                if sibling_child == '-' and y <= 4:
-                    sibling_genome[y][x] = 'B'
-                else:
-                    sibling_genome[y][x] = sibling_child
+                # USING SELF.GENOME
+                child = self.genome[y][x]
+                if child == "T":
+                    if random.random() < 0.3 or sibling_genome[y][x-1] == "T" or sibling_genome[y][x-1] == "|":
+                        child = "o"
+                    else:
+                        i = 1
+                        while len(sibling_genome) > y+i+1:
+                            if random.random() < 0.5 or sibling_genome[y+i][x-1] == "|" or sibling_genome[y+i][x-1] != "T":
+                                belowPipe = random.choice(options)
+                                if belowPipe != "o" and belowPipe != "-" and belowPipe != "E":
+                                    sibling_genome[y+i][x] = belowPipe
+                                    sibling_genome[y+i][x+1] = belowPipe
+                                    break 
+                            else:
+                                sibling_genome[y+i][x] = "|"
+                                i += 1
+                if child == "|":
+                    child = "o"
+                if y != 0 and (sibling_genome[y-1][x] == "T" or sibling_genome[y-1][x] == "|" or sibling_genome[y-1][x-1] == "T" or sibling_genome[y-1][x-1] == "|"):
+                    if child == "o" or child == "-" or child == "E":
+                        if random.random() > .02:
+                            child = "B"
+                        else:
+                            child = "T"
+                sibling_genome[y][x] = child
+                
         # do mutation; note we're returning a one-element tuple here
         new_genome = self.mutate(new_genome)
         sibling_genome = self.mutate(sibling_genome)
