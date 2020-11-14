@@ -82,7 +82,7 @@ class Individual_Grid(object):
         # Leaving first and last columns alone...
         # do crossover with other
         left = 1
-        right = width - 1 # Such that nothing prints out on flag position
+        right = width - 2 # Such that nothing prints out on flag position
         for y in range(height):
             for x in range(left, right):
                 # STUDENT Which one should you take?  Self, or other?  Why?
@@ -97,14 +97,26 @@ class Individual_Grid(object):
                     child = other.genome[y][x]
                     chosen = other.genome
 
+                changed = False
+                unlimited = ['-', '-', '-', '-', 'o'] # Giving Empty Space More Bias
+
                 if child != '-' and y <= 4:
                     new_genome[y][x] = '-'
-                else:
-                    if child == 'T':
-                        if chosen[y - 1][x] != 'X' or chosen[y - 1][x] != '|':
-                            new_genome[y][x] = 'o'
-                    else:
-                        new_genome[y][x] = child
+                    changed = True
+
+                if child == 'T' or child == '|':
+                    if chosen[y - 1][x] != 'X' or chosen[y - 1][x] != '|':
+                        new_child = random.choice(unlimited)
+                        new_genome[y][x] = new_child
+                        changed = True
+
+                if child == 'M' and y > 12:
+                    new_child = random.choice(unlimited)
+                    new_genome[y][x] = new_child
+                    changed = True
+
+                if changed == False:    
+                    new_genome[y][x] = child
                 
         # do mutation; note we're returning a one-element tuple here
         new_genome = self.mutate(new_genome)
