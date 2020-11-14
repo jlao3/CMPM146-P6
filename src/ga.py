@@ -92,32 +92,30 @@ class Individual_Grid(object):
 
                 if coin_flip <= 0.5:
                     child = self.genome[y][x]
-                    chosen = self.genome
                 else:
                     child = other.genome[y][x]
-                    chosen = other.genome
 
                 free_space = ['-', '-', '-', '-', 'o'] # Giving Empty Space More Bias
-                change_pipe = ['-', '-', '-', 'o', 'o', 'o', 'T']
+                change_pipe = ['-', '-', '-', '-', '-', 'o', 'o', 'o', 'T']
 
                 if child != '-' and y <= 4:
                     new_genome[y][x] = '-'
                 elif child == 'T':
-                    if (chosen[y + 1][x] == 'X' or chosen[y + 1][x] == '|') and chosen[y - 1][x] != '|':
+                    if (new_genome[y + 1][x] == '|') and (new_genome[y - 1][x] != '|' and new_genome[y - 1][x] != 'T'):
                         new_genome[y][x] = child
-                    elif chosen[y + 1][x] == 'X' and chosen[y - 1][x] == 'T':
+                    elif new_genome[y + 1][x] == 'X' and new_genome[y - 1][x] == 'T':
                         new_genome[y][x] = '|'
-                    elif chosen[y + 1][x] == 'X' and chosen[y - 1][x] != '|':
+                    elif new_genome[y + 1][x] == 'X' and (new_genome[y - 1][x] != '|' and new_genome[y - 1][x] != 'T'):
                         new_child = random.choice(change_pipe)
                         new_genome[y][x] = new_child
                     else:
                         new_genome[y][x] = '-'
                 elif child == '|':  
-                    if chosen[y + 1][x] == 'X' and chosen[y - 1][x] == 'T':
+                    if new_genome[y + 1][x] == 'X' and new_genome[y - 1][x] == 'T':
                         new_genome[y][x] = child
-                    elif chosen[y + 1][x] == 'X' and chosen[y - 1][x] != 'T':
+                    elif new_genome[y + 1][x] == 'X' and new_genome[y - 1][x] != 'T':
                         build_choice = random.random()
-                        if build_choice <= 0.75: # Bias it to not build a pipe
+                        if build_choice <= 0.95: # Bias it to not build a pipe
                             new_child = random.choice(free_space)
                             new_genome[y][x] = new_child
                         else:
@@ -129,20 +127,21 @@ class Individual_Grid(object):
                                 new_genome[y][x] = child
                                 new_genome[y - 1][x] = '|'
                                 new_genome[y - 2][x] = 'T'
-                    else:
-                        new_genome[y][x] = '-'
+                    elif new_genome[y + 1][x] != 'X' and new_genome[y + 1][x] != '|':
+                        new_child = random.choice(free_space)
+                        new_genome[y][x] = new_child
                 elif child == 'M' and y > 12:
                     new_genome[y][x] = '-'
-                elif (child != 'T' or child != '|') and (y < 15) and (chosen[y + 1][x] == '|'):
-                    build_choice = random.random()
-                    if build_choice <= 0.75: # Bias to just destroy the pipe
-                        new_genome[y + 1][x] = 'X'
-                        new_child = random.choice(free_space)
-                        new_genome[y][x] = new_child 
-                    else:
-                        new_genome[y][x] = 'T'
-                else:
-                    new_genome[y][x] = child
+                elif child == 'M' or child == '?' or child == 'B':
+                    if new_genome[y + 1][x] != '-' or new_genome[y+1][x] != 'B':
+                        new_genome[y][x] = '-'
+                
+                if (y < 15 and y > 4) and (new_genome[y][x] == 'T') and (new_genome[y + 1][x] != '|' and new_genome[y + 1][x] != 'X'):
+                    new_child = random.choice(free_space)
+                    new_genome[y][x] = new_child
+                if (y < 15 and y > 4) and (new_genome[y][x] == '|') and (new_genome[y + 1][x] != 'X' and new_genome[y + 1][x] != '|'):
+                    new_child = random.choice(free_space)
+                    new_genome[y][x] = new_child
                 
         # do mutation; note we're returning a one-element tuple here
         new_genome = self.mutate(new_genome)
@@ -407,7 +406,7 @@ def generate_successors(population):
     # Hint: Call generate_children() on some individuals and fill up results.
     
     # generate_children is returning only one child again
-    if random.random() <= 0.5: # random selection
+    if random.random() <= 0.2: # random selection
         while len(results) < len(population):
             Parent = random.choice(population)
             Mate = random.choice(population)
