@@ -78,7 +78,7 @@ class Individual_Grid(object):
     # Create zero or more children from self and other
     def generate_children(self, other):
         new_genome = copy.deepcopy(self.genome)
-        sibling_genome = copy.deepcopy(other.genome)
+
         # Leaving first and last columns alone...
         # do crossover with other
         left = 1
@@ -88,64 +88,21 @@ class Individual_Grid(object):
                 # STUDENT Which one should you take?  Self, or other?  Why?
                 # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
                 
-                # USING OTHER.GENOME
-                child = other.genome[y][x]
-                if child == "T":
-                        if random.random() < 0.3 or new_genome[y][x-1] == "T" or new_genome[y][x-1] == "|":
-                            child = "o"
-                        else:
-                            i = 1
-                            while len(new_genome) > y+i+1:
-                                if random.random() < 0.5 or new_genome[y+i][x-1] == "|" or new_genome[y+i][x-1] != "T":
-                                    belowPipe = random.choice(options)
-                                    if belowPipe != "o" and belowPipe != "-" and belowPipe != "E":
-                                        new_genome[y+i][x] = belowPipe
-                                        new_genome[y+i][x+1] = belowPipe
-                                        break 
-                                else:
-                                    new_genome[y+i][x] = "|"
-                                    i += 1
-                if child == "|":
-                    child = "o"
-                if y != 0 and (new_genome[y-1][x] == "T" or new_genome[y-1][x] == "|" or new_genome[y-1][x-1] == "T" or new_genome[y-1][x-1] == "|"):
-                    if child == "o" or child == "-" or child == "E":
-                        if random.random() > .02:
-                            child = "B"
-                        else:
-                            child = "T"
-                new_genome[y][x] = child
+                coin_flip = random.random()
 
-                # USING SELF.GENOME
-                child = self.genome[y][x]
-                if child == "T":
-                    if random.random() < 0.3 or sibling_genome[y][x-1] == "T" or sibling_genome[y][x-1] == "|":
-                        child = "o"
-                    else:
-                        i = 1
-                        while len(sibling_genome) > y+i+1:
-                            if random.random() < 0.5 or sibling_genome[y+i][x-1] == "|" or sibling_genome[y+i][x-1] != "T":
-                                belowPipe = random.choice(options)
-                                if belowPipe != "o" and belowPipe != "-" and belowPipe != "E":
-                                    sibling_genome[y+i][x] = belowPipe
-                                    sibling_genome[y+i][x+1] = belowPipe
-                                    break 
-                            else:
-                                sibling_genome[y+i][x] = "|"
-                                i += 1
-                if child == "|":
-                    child = "o"
-                if y != 0 and (sibling_genome[y-1][x] == "T" or sibling_genome[y-1][x] == "|" or sibling_genome[y-1][x-1] == "T" or sibling_genome[y-1][x-1] == "|"):
-                    if child == "o" or child == "-" or child == "E":
-                        if random.random() > .02:
-                            child = "B"
-                        else:
-                            child = "T"
-                sibling_genome[y][x] = child
+                if coin_flip <= 0.5:
+                    child = self.genome[y][x]
+                else:
+                    child = other.genome[y][x]
+
+                if child != '-' and y <= 4:
+                    new_genome[y][x] = '-'
+                else:
+                    new_genome[y][x] = child
                 
         # do mutation; note we're returning a one-element tuple here
         new_genome = self.mutate(new_genome)
-        sibling_genome = self.mutate(sibling_genome)
-        return (Individual_Grid(new_genome), Individual_Grid(sibling_genome))
+        return (Individual_Grid(new_genome),)
 
     # Turn the genome into a level string (easy for this genome)
     def to_level(self):
@@ -405,13 +362,14 @@ def generate_successors(population):
     # STUDENT Design and implement this
     # Hint: Call generate_children() on some individuals and fill up results.
     
+    # generate_children is returning only one child again
     if random.random() <= 0.5: # random selection
         while len(results) < len(population):
             Parent = random.choice(population)
             Mate = random.choice(population)
             child = Parent.generate_children(Mate)
             results.append(child[0])
-            results.append(child[1])
+            # results.append(child[1])
 
     else: # roulette selection
 
@@ -442,7 +400,7 @@ def generate_successors(population):
 
             child = chosen_parent.generate_children(chosen_mate)
             results.append(child[0])
-            results.append(child[1])     
+            # results.append(child[1])     
                
     return results
 
