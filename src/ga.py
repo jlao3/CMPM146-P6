@@ -92,13 +92,19 @@ class Individual_Grid(object):
 
                 if coin_flip <= 0.5:
                     child = self.genome[y][x]
+                    chosen = self.genome
                 else:
                     child = other.genome[y][x]
+                    chosen = other.genome
 
                 if child != '-' and y <= 4:
                     new_genome[y][x] = '-'
                 else:
-                    new_genome[y][x] = child
+                    if child == 'T':
+                        if chosen[y - 1][x] != 'X' or chosen[y - 1][x] != '|':
+                            new_genome[y][x] = 'o'
+                    else:
+                        new_genome[y][x] = child
                 
         # do mutation; note we're returning a one-element tuple here
         new_genome = self.mutate(new_genome)
