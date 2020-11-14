@@ -139,7 +139,7 @@ class Individual_Grid(object):
                 if (y < 15 and y > 4) and (new_genome[y][x] == 'T') and (new_genome[y + 1][x] != '|' and new_genome[y + 1][x] != 'X'):
                     new_child = random.choice(free_space)
                     new_genome[y][x] = new_child
-                if (y < 15 and y > 4) and (new_genome[y][x] == '|') and (new_genome[y + 1][x] != 'X' and new_genome[y + 1][x] != '|'):
+                if (y < 15 and y > 4) and (new_genome[y][x] == '|') and (new_genome[y + 1][x] != 'X' and new_genome[y + 1][x] != '|' and new_genome[y - 1][x] != '|' and new_genome[y - 1][x] != 'T'):
                     new_child = random.choice(free_space)
                     new_genome[y][x] = new_child
                 
