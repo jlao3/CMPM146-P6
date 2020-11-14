@@ -97,6 +97,7 @@ class Individual_Grid(object):
 
                 free_space = ['-', '-', '-', '-', 'o'] # Giving Empty Space More Bias
                 change_pipe = ['-', '-', '-', '-', '-', 'o', 'o', 'o', 'T']
+                platform_blocks = ['B', 'M', '?', 'X']
 
                 if child != '-' and y <= 4:
                     new_genome[y][x] = '-'
@@ -133,9 +134,39 @@ class Individual_Grid(object):
                 elif child == 'M' and y > 12:
                     new_genome[y][x] = '-'
                 elif child == 'M' or child == '?' or child == 'B':
-                    if new_genome[y + 1][x] != '-' or new_genome[y+1][x] != 'B':
-                        new_genome[y][x] = '-'
-                
+                    if new_genome[y + 1][x] != '-' or new_genome[y + 1][x] != 'B':
+                        new_genome[y + 1][x] = '-'
+                        new_genome[y][x] = child
+                elif child == 'E':
+                    if new_genome[y + 1][x] != 'X' and new_genome[y + 1][x] != 'M' and new_genome[y + 1][x] != '?' and new_genome[y + 1][x] != 'B':
+                        platform_builder = random.random()
+                        if platform_builder <= 0.4:
+                            size_builder = random.random()
+                            if size_builder <= 0.3:
+                                new_genome[y][x] = child
+                                block_picker = random.choice(platform_blocks)
+                                new_genome[y + 1][x] = block_picker
+                            elif size_builder <= 0.6:
+                                new_genome[y][x] = child
+                                for new_width in range(x - 1, x + 1):
+                                    block_picker = random.choice(platform_blocks)
+                                    new_genome[y + 1][new_width] = block_picker
+                            elif size_builder <= 1.0:
+                                new_genome[y][x] = child
+                                for new_width in range(x - 2, x + 2):
+                                    block_picker = random.choice(platform_blocks)
+                                    new_genome[y + 1][new_width] = block_picker
+                        else:
+                            new_genome[y][x] = '-'
+                    else:
+                        new_genome[y][x] = 'o'
+                elif child == '-':
+                    new_genome[y][x] = child
+                elif child == 'o':
+                    new_genome[y][x] = child
+
+                if (y < 14) and (new_genome[y + 1][x] == 'm' or new_genome[y + 1][x - 1] == 'm' or new_genome[y][x - 1] == 'm'):
+                    new_genome[y][x] == '-'
                 if (y < 15 and y > 4) and (new_genome[y][x] == 'T') and (new_genome[y + 1][x] != '|' and new_genome[y + 1][x] != 'X'):
                     new_child = random.choice(free_space)
                     new_genome[y][x] = new_child
