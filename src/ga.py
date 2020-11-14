@@ -83,7 +83,7 @@ class Individual_Grid(object):
         # do crossover with other
         left = 1
         right = width - 1 # Such that nothing prints out on flag position
-        for y in range(height):
+        for y in reversed(range(height)): # Reversed so it builds from the ground up
             for x in range(left, right):
                 # STUDENT Which one should you take?  Self, or other?  Why?
                 # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
@@ -97,25 +97,46 @@ class Individual_Grid(object):
                     child = other.genome[y][x]
                     chosen = other.genome
 
-                unlimited = ['-', '-', '-', '-', 'o'] # Giving Empty Space More Bias
+                free_space = ['-', '-', '-', '-', 'o'] # Giving Empty Space More Bias
+                change_pipe = ['-', '-', '-', 'o', 'o', 'o', 'T']
+
                 if child != '-' and y <= 4:
                     new_genome[y][x] = '-'
+
                 else:
-                    changed = False
-
-                    if child == 'T' or child == '|':
-                        if chosen[y - 1][x] != 'X' or chosen[y - 1][x] != '|':
-                            new_child = random.choice(unlimited)
+                    if child == '|':
+                        if (chosen[y + 1][x] == 'X' or chosen[y + 1][x] == '|') and (chosen[y - 1][x] == '|' or chosen[y - 1][x] == 'T'):
+                            new_genome[y][x] = child
+                        elif chosen[y + 1][x] == 'X' and chosen[y - 1][x] != 'T':
+                            coin_flip = random.random()
+                            if coin_flip <= 0.35: # Bias it to not build pipe
+                                new_child = random.choice(change_pipe)
+                                new_genome[y][x] = new_child
+                            else:
+                                new_genome[y][x] = child
+                        else:
+                            new_child = random.choice(free_space)
                             new_genome[y][x] = new_child
-                            changed = True
 
-                    if child == 'M' and y > 12:
-                        new_child = random.choice(unlimited)
+                    elif child == 'T':
+                        if chosen[y + 1][x] == 'X':
+                            new_child = random.choice(change_pipe)
+                            new_genome[y][x] = new_child
+                        elif chosen[y + 1][x] == '|':
+                            new_genome[y][x] = child
+                        else:
+                            new_child = random.choice(free_space)
+                            new_genome[y][x] = new_child
+
+                    elif child == 'M' and y > 12:
+                        new_child = random.choice(free_space)
                         new_genome[y][x] = new_child
-                        changed = True
 
-                    if changed == False:
-                        new_genome[y][x] = child
+                    elif child != 'T' and y < 15 and chosen[y + 1][x] == '|':
+                        new_genome[y][x] = 'T'
+
+                    else:
+                        new_genome[y][x] = 'X'
                 
         # do mutation; note we're returning a one-element tuple here
         new_genome = self.mutate(new_genome)
