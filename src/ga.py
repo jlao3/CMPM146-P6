@@ -72,7 +72,7 @@ class Individual_Grid(object):
         right = width - 1
         for y in range(height):
             for x in range(left, right):
-                if genome[y][x] == '|' and (genome[y][x] != '|' and genome[y][x] != 'T'):
+                if genome[y][x] == '|' and (genome[y - 1][x] != '|' and genome[y - 1][x] != 'T'):
                     genome[y][x] = '-'
         return genome
 
@@ -103,6 +103,9 @@ class Individual_Grid(object):
         new_genome[13][0] = random.choice(free_space)
         new_genome[13][1] = random.choice(free_space)
         new_genome[14][1] = random.choice(free_space)
+        new_genome[12][0] = random.choice(free_space)
+        new_genome[13][2] = random.choice(free_space)
+        new_genome[14][2] = random.choice(free_space)
 
         for y in reversed(range(height)): # Reversed so it builds from the ground up
             for x in range(left, right):
