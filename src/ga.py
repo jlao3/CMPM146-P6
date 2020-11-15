@@ -83,11 +83,31 @@ class Individual_Grid(object):
         # do crossover with other
         left = 1
         right = width - 1 # Such that nothing prints out on flag position
+
+        free_space = ['-', '-', '-', '-', 'o']  # Giving Empty Space More Bias
+        change_pipe = ['-', '-', '-', '-', '-', 'o', 'o', 'o']
+        platform_blocks = ['B', 'M', '?', 'X']
+
+        for x in range(left, right):
+            random_holes = random.random()
+            if random_holes <= 0.3:
+                new_genome[15][x] = '-'
+            else:
+                new_genome[15][x] = 'X'
+            #if x > left and  x < right:
+            if new_genome[15][x-1] == '-' and new_genome[15][x-2] == '-':
+                new_genome[15][x] = 'X'
+
+
+        new_genome[13][0] = random.choice(free_space)
+        new_genome[12][1] = random.choice(free_space)
+        new_genome[13][1] = random.choice(free_space)
+
         for y in reversed(range(height)): # Reversed so it builds from the ground up
             for x in range(left, right):
                 # STUDENT Which one should you take?  Self, or other?  Why?
                 # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
-                
+
                 coin_flip = random.random()
 
                 if coin_flip <= 0.5:
@@ -95,25 +115,29 @@ class Individual_Grid(object):
                 else:
                     child = other.genome[y][x]
 
-                free_space = ['-', '-', '-', '-', 'o'] # Giving Empty Space More Bias
-                change_pipe = ['-', '-', '-', '-', '-', 'o', 'o', 'o', 'T']
-                platform_blocks = ['B', 'M', '?', 'X']
-
                 if child != '-' and y <= 4:
                     new_genome[y][x] = '-'
+
                 elif child == 'T':
+                    # if there is pipe seg below, and there is no pipe seg above, and the pipe seg above isnt a pipe exit, put in pipe end
                     if (new_genome[y + 1][x] == '|') and (new_genome[y - 1][x] != '|' and new_genome[y - 1][x] != 'T'):
                         new_genome[y][x] = child
+                    #if there is solid ground below, and above there is pipe, make vert segment
                     elif new_genome[y + 1][x] == 'X' and new_genome[y - 1][x] == 'T':
                         new_genome[y][x] = '|'
+                    #if there is solid ground below, and there isn't pipe seg above, and there isn't pipe end above, replace w random
                     elif new_genome[y + 1][x] == 'X' and (new_genome[y - 1][x] != '|' and new_genome[y - 1][x] != 'T'):
                         new_child = random.choice(change_pipe)
                         new_genome[y][x] = new_child
+                    #otherwise, make empty
                     else:
                         new_genome[y][x] = '-'
-                elif child == '|':  
+
+                elif child == '|':
+                    #if there is solid ground below and pipe end above, put in pipe seg
                     if new_genome[y + 1][x] == 'X' and new_genome[y - 1][x] == 'T':
                         new_genome[y][x] = child
+                    #if there is solid ground below and pipe end is not above, handle procedure with build_choice
                     elif new_genome[y + 1][x] == 'X' and new_genome[y - 1][x] != 'T':
                         build_choice = random.random()
                         if build_choice <= 0.95: # Bias it to not build a pipe
@@ -128,15 +152,17 @@ class Individual_Grid(object):
                                 new_genome[y][x] = child
                                 new_genome[y - 1][x] = '|'
                                 new_genome[y - 2][x] = 'T'
-                    elif new_genome[y + 1][x] != 'X' and new_genome[y + 1][x] != '|':
+
+                    elif new_genome[y + 1][x] != 'X':
                         new_child = random.choice(free_space)
                         new_genome[y][x] = new_child
-                elif child == 'M' and y > 12:
-                    new_genome[y][x] = '-'
+
                 elif child == 'M' or child == '?' or child == 'B':
-                    if new_genome[y + 1][x] != '-' or new_genome[y + 1][x] != 'B':
-                        new_genome[y + 1][x] = '-'
-                        new_genome[y][x] = child
+                    if y > 12:
+                        new_genome[y][x] = random.choice(free_space)
+                    elif new_genome[y+1][x] != '-' or new_genome[y+1][x] != 'B':
+                        new_genome[y+1][x] = random.choice(free_space)
+
                 elif child == 'E':
                     if new_genome[y + 1][x] != 'X' and new_genome[y + 1][x] != 'M' and new_genome[y + 1][x] != '?' and new_genome[y + 1][x] != 'B':
                         platform_builder = random.random()
@@ -160,13 +186,21 @@ class Individual_Grid(object):
                             new_genome[y][x] = '-'
                     else:
                         new_genome[y][x] = 'o'
+
                 elif child == '-':
                     new_genome[y][x] = child
                 elif child == 'o':
                     new_genome[y][x] = child
 
-                if (y < 14) and (new_genome[y + 1][x] == 'm' or new_genome[y + 1][x - 1] == 'm' or new_genome[y][x - 1] == 'm'):
-                    new_genome[y][x] == '-'
+                elif new_genome[y-1][x-1] == '-':
+                    if child == 'B' or child == 'M' or child == '?' or child == 'X':
+                        new_genome[y][x] == '-'
+                        new_genome[y-1][x] == '-'
+
+
+                if new_genome[y][x] == 'B' or new_genome[y][x] == 'M' or new_genome[y][x] == '?' and y == 14:
+                    new_genome[y][x] = '-'
+
                 if (y < 15 and y > 4) and (new_genome[y][x] == 'T') and (new_genome[y + 1][x] != '|' and new_genome[y + 1][x] != 'X'):
                     new_child = random.choice(free_space)
                     new_genome[y][x] = new_child
@@ -513,7 +547,7 @@ def ga():
                     print("Max fitness:", str(best.fitness()))
                     print("Average generation time:", (now - start) / generation)
                     print("Net time:", now - start)
-                    with open("src/levels/last.txt", 'w') as f:
+                    with open("levels/last.txt", 'w') as f:
                         for row in best.to_level():
                             f.write("".join(row) + "\n")
                 generation += 1
@@ -545,6 +579,6 @@ if __name__ == "__main__":
     now = time.strftime("%m_%d_%H_%M_%S")
     # STUDENT You can change this if you want to blast out the whole generation, or ten random samples, or...
     for k in range(0, 10):
-        with open("src/levels/" + now + "_" + str(k) + ".txt", 'w') as f:
+        with open("levels/" + now + "_" + str(k) + ".txt", 'w') as f:
             for row in final_gen[k].to_level():
                 f.write("".join(row) + "\n")
