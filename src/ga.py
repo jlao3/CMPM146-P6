@@ -72,7 +72,8 @@ class Individual_Grid(object):
         right = width - 1
         for y in range(height):
             for x in range(left, right):
-                pass
+                if genome[y][x] == '|' and (genome[y][x] != '|' and genome[y][x] != 'T'):
+                    genome[y][x] = '-'
         return genome
 
     # Create zero or more children from self and other
@@ -100,8 +101,8 @@ class Individual_Grid(object):
 
 
         new_genome[13][0] = random.choice(free_space)
-        new_genome[12][1] = random.choice(free_space)
         new_genome[13][1] = random.choice(free_space)
+        new_genome[14][1] = random.choice(free_space)
 
         for y in reversed(range(height)): # Reversed so it builds from the ground up
             for x in range(left, right):
@@ -115,9 +116,10 @@ class Individual_Grid(object):
                 else:
                     child = other.genome[y][x]
 
-                if child != '-' and y <= 4:
+                if y <= 4:
                     new_genome[y][x] = '-'
-
+                elif y == 15:
+                    new_genome[y][x] = 'X'
                 elif child == 'T':
                     # if there is pipe seg below, and there is no pipe seg above, and the pipe seg above isnt a pipe exit, put in pipe end
                     if (new_genome[y + 1][x] == '|') and (new_genome[y - 1][x] != '|' and new_genome[y - 1][x] != 'T'):
@@ -152,7 +154,6 @@ class Individual_Grid(object):
                                 new_genome[y][x] = child
                                 new_genome[y - 1][x] = '|'
                                 new_genome[y - 2][x] = 'T'
-
                     elif new_genome[y + 1][x] != 'X':
                         new_child = random.choice(free_space)
                         new_genome[y][x] = new_child
@@ -160,28 +161,28 @@ class Individual_Grid(object):
                 elif child == 'M' or child == '?' or child == 'B':
                     if y > 12:
                         new_genome[y][x] = random.choice(free_space)
-                    elif new_genome[y+1][x] != '-' or new_genome[y+1][x] != 'B':
-                        new_genome[y+1][x] = random.choice(free_space)
+                    elif new_genome[y + 1][x] != '-' or new_genome[y + 1][x] != 'B':
+                        new_genome[y + 1][x] = random.choice(free_space)
 
                 elif child == 'E':
                     if new_genome[y + 1][x] != 'X' and new_genome[y + 1][x] != 'M' and new_genome[y + 1][x] != '?' and new_genome[y + 1][x] != 'B':
                         platform_builder = random.random()
                         if platform_builder <= 0.4:
                             size_builder = random.random()
-                            if size_builder <= 0.3:
+                            if size_builder <= 0.2 and x < right:
                                 new_genome[y][x] = child
-                                block_picker = random.choice(platform_blocks)
-                                new_genome[y + 1][x] = block_picker
-                            elif size_builder <= 0.6:
+                                for new_width in range(x - 2, x + 2):
+                                    block_picker = random.choice(platform_blocks)
+                                    new_genome[y + 1][new_width] = block_picker
+                            elif size_builder <= 0.5 and x < right - 1:
                                 new_genome[y][x] = child
                                 for new_width in range(x - 1, x + 1):
                                     block_picker = random.choice(platform_blocks)
                                     new_genome[y + 1][new_width] = block_picker
                             elif size_builder <= 1.0:
                                 new_genome[y][x] = child
-                                for new_width in range(x - 2, x + 2):
-                                    block_picker = random.choice(platform_blocks)
-                                    new_genome[y + 1][new_width] = block_picker
+                                block_picker = random.choice(platform_blocks)
+                                new_genome[y + 1][x] = block_picker
                         else:
                             new_genome[y][x] = '-'
                     else:
@@ -192,14 +193,10 @@ class Individual_Grid(object):
                 elif child == 'o':
                     new_genome[y][x] = child
 
-                elif new_genome[y-1][x-1] == '-':
+                elif new_genome[y - 1][x - 1] == '-':
                     if child == 'B' or child == 'M' or child == '?' or child == 'X':
                         new_genome[y][x] == '-'
-                        new_genome[y-1][x] == '-'
-
-
-                if new_genome[y][x] == 'B' or new_genome[y][x] == 'M' or new_genome[y][x] == '?' and y == 14:
-                    new_genome[y][x] = '-'
+                        new_genome[y - 1][x] == '-'
 
                 if (y < 15 and y > 4) and (new_genome[y][x] == 'T') and (new_genome[y + 1][x] != '|' and new_genome[y + 1][x] != 'X'):
                     new_child = random.choice(free_space)
@@ -547,7 +544,7 @@ def ga():
                     print("Max fitness:", str(best.fitness()))
                     print("Average generation time:", (now - start) / generation)
                     print("Net time:", now - start)
-                    with open("levels/last.txt", 'w') as f:
+                    with open("src/levels/last.txt", 'w') as f:
                         for row in best.to_level():
                             f.write("".join(row) + "\n")
                 generation += 1
@@ -579,6 +576,6 @@ if __name__ == "__main__":
     now = time.strftime("%m_%d_%H_%M_%S")
     # STUDENT You can change this if you want to blast out the whole generation, or ten random samples, or...
     for k in range(0, 10):
-        with open("levels/" + now + "_" + str(k) + ".txt", 'w') as f:
+        with open("src/levels/" + now + "_" + str(k) + ".txt", 'w') as f:
             for row in final_gen[k].to_level():
                 f.write("".join(row) + "\n")
