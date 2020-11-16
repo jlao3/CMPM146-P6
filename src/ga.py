@@ -70,6 +70,16 @@ class Individual_Grid(object):
 
         left = 1
         right = width - 1
+        for x in range(left, right):
+            random_holes = random.random()
+            if random_holes <= 0.3:
+                genome[15][x] = '-'
+            else:
+                genome[15][x] = 'X'
+            if x > left and  x < right:
+                if genome[15][x - 1] == '-' and genome[15][x - 2] == '-':
+                 genome[15][x] = 'X'
+
         for y in range(height):
             for x in range(left, right):
                 if genome[y][x] == '|' and (genome[y - 1][x] != '|' and genome[y - 1][x] != 'T'):
@@ -88,17 +98,6 @@ class Individual_Grid(object):
         free_space = ['-', '-', '-', '-', 'o']  # Giving Empty Space More Bias
         change_pipe = ['-', '-', '-', '-', '-', 'o', 'o', 'o']
         platform_blocks = ['B', 'M', '?', 'X']
-
-        for x in range(left, right):
-            random_holes = random.random()
-            if random_holes <= 0.3:
-                new_genome[15][x] = '-'
-            else:
-                new_genome[15][x] = 'X'
-            #if x > left and  x < right:
-            if new_genome[15][x-1] == '-' and new_genome[15][x-2] == '-':
-                new_genome[15][x] = 'X'
-
 
         new_genome[13][0] = random.choice(free_space)
         new_genome[13][1] = random.choice(free_space)
@@ -166,6 +165,8 @@ class Individual_Grid(object):
                         new_genome[y][x] = random.choice(free_space)
                     elif new_genome[y + 1][x] != '-' or new_genome[y + 1][x] != 'B':
                         new_genome[y + 1][x] = random.choice(free_space)
+                    else:
+                        new_genome[y][x] = child
 
                 elif child == 'E':
                     if new_genome[y + 1][x] != 'X' and new_genome[y + 1][x] != 'M' and new_genome[y + 1][x] != '?' and new_genome[y + 1][x] != 'B':
@@ -196,10 +197,10 @@ class Individual_Grid(object):
                 elif child == 'o':
                     new_genome[y][x] = child
 
-                elif new_genome[y - 1][x - 1] == '-':
+                elif new_genome[y + 1][x - 1] == '-' or new_genome:
                     if child == 'B' or child == 'M' or child == '?' or child == 'X':
                         new_genome[y][x] == '-'
-                        new_genome[y - 1][x] == '-'
+                        new_genome[y + 1][x] == '-'
 
                 if (y < 15 and y > 4) and (new_genome[y][x] == 'T') and (new_genome[y + 1][x] != '|' and new_genome[y + 1][x] != 'X'):
                     new_child = random.choice(free_space)
@@ -547,7 +548,7 @@ def ga():
                     print("Max fitness:", str(best.fitness()))
                     print("Average generation time:", (now - start) / generation)
                     print("Net time:", now - start)
-                    with open("src/levels/last.txt", 'w') as f:
+                    with open("levels/last.txt", 'w') as f:
                         for row in best.to_level():
                             f.write("".join(row) + "\n")
                 generation += 1
@@ -579,6 +580,6 @@ if __name__ == "__main__":
     now = time.strftime("%m_%d_%H_%M_%S")
     # STUDENT You can change this if you want to blast out the whole generation, or ten random samples, or...
     for k in range(0, 10):
-        with open("src/levels/" + now + "_" + str(k) + ".txt", 'w') as f:
+        with open("levels/" + now + "_" + str(k) + ".txt", 'w') as f:
             for row in final_gen[k].to_level():
                 f.write("".join(row) + "\n")
