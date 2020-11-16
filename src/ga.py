@@ -220,10 +220,10 @@ class Individual_Grid(object):
                 elif child == 'o':
                     new_genome[y][x] = random.choice(free_space)
 
-                elif new_genome[y + 1][x - 1] == '-' or new_genome:
+                elif new_genome[y + 1][x - 1] == '-':
                     if child == 'B' or child == 'M' or child == '?' or child == 'X':
-                        new_genome[y][x] == '-'
-                        new_genome[y + 1][x] == '-'
+                        new_genome[y][x] = '-'
+                        new_genome[y + 1][x] = '-'
 
                 if (y < 15 and y > 4) and (new_genome[y][x] == 'T') and (new_genome[y + 1][x] != '|' and new_genome[y + 1][x] != 'X'):
                     new_child = random.choice(free_space)
@@ -518,35 +518,34 @@ def generate_successors(population):
 
     else: # roulette selection
 
-        '''
-        Calculate S = the sum of a finesses.
-        Generate a random number between 0 and S.
-        Starting from the top of the population, keep adding the finesses to the partial sum P, till P<S.
-        The individual for which P exceeds S is the chosen individual.
-        '''
-
         total_fitness = 0.0
-        for Individual in population:
-            total_fitness += Individual._fitness
+        for individual in population:
+            total_fitness += individual._fitness
 
-        while len(results) < len(population):
-            first_choice = random.uniform(0, total_fitness)
-            second_choice = random.uniform(0, total_fitness)
+        x = random.uniform(0.0, total_fitness)
+        partial_sum = 0.0
 
+        while len(population) > len(results):
             for Parent in population:
-                first_choice += Parent._fitness
-                if first_choice < total_fitness:
+                if partial_sum > x:
                     chosen_parent = Parent
+                    break
+                else:
+                    partial_sum += Parent._fitness
+
+            x = random.uniform(0.0, total_fitness)
+            partial_sum = 0.0
 
             for Mate in population:
-                second_choice += Mate._fitness
-                if second_choice < total_fitness:
+                if partial_sum > x:
                     chosen_mate = Mate
+                    break
+                else:
+                    partial_sum += Mate._fitness
 
             child = chosen_parent.generate_children(chosen_mate)
             results.append(child[0])
-            # results.append(child[1])     
-               
+
     return results
 
 
@@ -584,7 +583,7 @@ def ga():
                     print("Max fitness:", str(best.fitness()))
                     print("Average generation time:", (now - start) / generation)
                     print("Net time:", now - start)
-                    with open("src/levels/last.txt", 'w') as f:
+                    with open("levels/last.txt", 'w') as f:
                         for row in best.to_level():
                             f.write("".join(row) + "\n")
                 generation += 1
@@ -616,6 +615,6 @@ if __name__ == "__main__":
     now = time.strftime("%m_%d_%H_%M_%S")
     # STUDENT You can change this if you want to blast out the whole generation, or ten random samples, or...
     for k in range(0, 10):
-        with open("src/levels/" + now + "_" + str(k) + ".txt", 'w') as f:
+        with open("levels/" + now + "_" + str(k) + ".txt", 'w') as f:
             for row in final_gen[k].to_level():
                 f.write("".join(row) + "\n")
