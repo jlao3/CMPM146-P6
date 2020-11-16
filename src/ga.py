@@ -102,8 +102,8 @@ class Individual_Grid(object):
                 if genome[y][x] == '|' and (genome[y - 1][x] != '|' and genome[y - 1][x] != 'T'):
                     genome[y][x] = '-'
 
-                if genome[y][x] == '|' and genome[y][x - 1] != 'X':
-                    genome[y][x - 1] == 'X'
+                if (y == 14) and (genome[y][x] == '|') and (genome[y][x - 1] != 'X'):
+                    genome[y][x - 1] = 'X'
 
                 if random.random() <= 0.01: # Need better choices
                     genome[y][x] = random.choice(best_mix)
