@@ -327,7 +327,7 @@ class Individual_DE(object):
             penalties -= 2
         # Pipes should be kept minimal
         if len(list(filter(lambda de: de[1] == "7_pipe", self.genome))) > 3:
-            penalties -= 3
+            penalties -= 2
         # STUDENT If you go for the FI-2POP extra credit, you can put constraint calculation in here too and cache it in a new entry in __slots__.
         self._fitness = sum(map(lambda m: coefficients[m] * measurements[m],
                                 coefficients)) + penalties
@@ -380,14 +380,14 @@ class Individual_DE(object):
                 if choice < 0.5:
                     x = offset_by_upto(x, width / 8, min=1, max=width - 2)
                 else:
-                    h = offset_by_upto(h, 2, min=2, max=height - 4)
+                    h = random.randint(1, 3)
                 new_de = (x, de_type, h)
             elif de_type == "0_hole":
                 w = de[2]
                 if choice < 0.5:
-                    x = offset_by_upto(x, width / 8, min=1, max=width - 2)
+                    x = random.randint(width/8, width-2)
                 else:
-                    w = offset_by_upto(w, 4, min=1, max=width - 2)
+                    w = random.randint(1, 3)
                 new_de = (x, de_type, w)
             elif de_type == "6_stairs":
                 h = de[2]
@@ -395,7 +395,10 @@ class Individual_DE(object):
                 if choice < 0.33:
                     x = offset_by_upto(x, width / 8, min=1, max=width - 2)
                 elif choice < 0.66:
-                    h = offset_by_upto(h, 8, min=1, max=height - 4)
+                    if dx == 1:
+                        h = offset_by_upto(h, 8, min=1, max=height - 4)
+                    else:
+                        h = offset_by_upto(h, 2, min=1, max=3)
                 else:
                     dx = -dx
                 new_de = (x, de_type, h, dx)
@@ -408,7 +411,7 @@ class Individual_DE(object):
                 elif choice < 0.5:
                     w = offset_by_upto(w, 8, min=1, max=width - 2)
                 elif choice < 0.75:
-                    y = offset_by_upto(y, height, min=0, max=height - 1)
+                    y = offset_by_upto(y, height, min=2, max=height - 1)
                 else:
                     madeof = random.choice(["?", "X", "B"])
                 new_de = (x, de_type, w, y, madeof)
@@ -487,19 +490,19 @@ class Individual_DE(object):
         # STUDENT Maybe enhance this
         elt_count = random.randint(8, 128)
         g = [random.choice([
-            (random.randint(1, width - 2), "0_hole", random.randint(1, 8)),
+            (random.randint(1, width - 2), "0_hole", random.randint(1, 3)),
             (random.randint(1, width - 2), "1_platform", random.randint(1, 8), random.randint(0, height - 1), random.choice(["?", "X", "B"])),
             (random.randint(1, width - 2), "2_enemy"),
             (random.randint(1, width - 2), "3_coin", random.randint(0, height - 1)),
             (random.randint(1, width - 2), "4_block", random.randint(0, height - 1), random.choice([True, False])),
             (random.randint(1, width - 2), "5_qblock", random.randint(0, height - 1), random.choice([True, False])),
-            (random.randint(1, width - 2), "6_stairs", random.randint(1, height - 4), random.choice([-1, 1])),
-            (random.randint(1, width - 2), "7_pipe", random.randint(2, height - 4))
+            (random.randint(1, width - 2), "6_stairs", random.randint(1, height - 4), -1),
+            (random.randint(1, width - 2), "7_pipe", random.randint(1, 3))
         ]) for i in range(elt_count)]
         return Individual_DE(g)
 
 
-Individual = Individual_Grid
+Individual = Individual_DE
 
 
 def generate_successors(population):
