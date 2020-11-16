@@ -313,8 +313,21 @@ class Individual_DE(object):
         )
         penalties = 0
         # STUDENT For example, too many stairs are unaesthetic.  Let's penalize that
+        #We don't like stairs
         if len(list(filter(lambda de: de[1] == "6_stairs", self.genome))) > 5:
             penalties -= 2
+        # We like coins
+        if len(list(filter(lambda de: de[1] == "3_coins", self.genome))) > 5:
+            penalties += 3
+        # Pipes should be kept minimal
+        if len(list(filter(lambda de: de[1] == "7_pipe", self.genome))) > 3:
+            penalties -= 3
+        # Holes should be decently spread out
+        if len(list(filter(lambda de: de[1] == "0_hole", self.genome))) > 2:
+            penalties += 1
+        # Platform adds verticality to level
+        if len(list(filter(lambda de: de[1] == "1_platform", self.genome))) > 2:
+            penalties += 2
         # STUDENT If you go for the FI-2POP extra credit, you can put constraint calculation in here too and cache it in a new entry in __slots__.
         self._fitness = sum(map(lambda m: coefficients[m] * measurements[m],
                                 coefficients)) + penalties
