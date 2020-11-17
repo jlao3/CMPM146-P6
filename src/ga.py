@@ -307,20 +307,20 @@ class Individual_DE(object):
             meaningfulJumpVariance=0.5,
             negativeSpace=0.6,
             pathPercentage=0.5,
-            emptyPercentage=0.6,
-            linearity=-0.5,
+            emptyPercentage=0.8,
+            linearity=-0.7,
             solvability=2.0
         )
         penalties = 0
         # STUDENT For example, too many stairs are unaesthetic.  Let's penalize that
         # Holes should be decently spread out
-        if len(list(filter(lambda de: de[1] == "0_hole", self.genome))) > 2:
+        if len(list(filter(lambda de: de[1] == "0_hole", self.genome))) > 10:
             penalties += 1
         # Platform adds verticality to level
-        if len(list(filter(lambda de: de[1] == "1_platform", self.genome))) > 2:
+        if len(list(filter(lambda de: de[1] == "1_platform", self.genome))) > 5:
             penalties += 2
         # We like coins
-        if len(list(filter(lambda de: de[1] == "3_coins", self.genome))) > 5:
+        if len(list(filter(lambda de: de[1] == "3_coins", self.genome))) > 15:
             penalties += 3
         #We don't like stairs
         if len(list(filter(lambda de: de[1] == "6_stairs", self.genome))) > 5:
@@ -339,8 +339,7 @@ class Individual_DE(object):
         return self._fitness
 
     def mutate(self, new_genome):
-        # STUDENT How does this work?  Explain it in your writeup.
-        # STUDENT consider putting more constraints on this, to prevent generating weird things
+
         if random.random() < 0.1 and len(new_genome) > 0:
             to_change = random.randint(0, len(new_genome) - 1)
             de = new_genome[to_change]
@@ -407,11 +406,11 @@ class Individual_DE(object):
                 y = de[3]
                 madeof = de[4]  # from "?", "X", "B"
                 if choice < 0.25:
-                    x = offset_by_upto(x, width / 8, min=1, max=width - 2)
+                    x = offset_by_upto(x, width / 8, min=1, max=width - 5)
                 elif choice < 0.5:
                     w = offset_by_upto(w, 8, min=1, max=width - 2)
                 elif choice < 0.75:
-                    y = offset_by_upto(y, height, min=2, max=height - 1)
+                    y = offset_by_upto(y, 3, min=2, max=5)
                 else:
                     madeof = random.choice(["?", "X", "B"])
                 new_de = (x, de_type, w, y, madeof)
@@ -488,15 +487,15 @@ class Individual_DE(object):
     @classmethod
     def random_individual(_cls):
         # STUDENT Maybe enhance this
-        elt_count = random.randint(8, 128)
+        elt_count = random.randint(40, 128)
         g = [random.choice([
             (random.randint(1, width - 2), "0_hole", random.randint(1, 3)),
             (random.randint(1, width - 2), "1_platform", random.randint(1, 8), random.randint(0, height - 1), random.choice(["?", "X", "B"])),
             (random.randint(1, width - 2), "2_enemy"),
             (random.randint(1, width - 2), "3_coin", random.randint(0, height - 1)),
-            (random.randint(1, width - 2), "4_block", random.randint(0, height - 1), random.choice([True, False])),
+            (random.randint(1, width - 2), "4_block", random.randint(0, 5), random.choice([True, False])),
             (random.randint(1, width - 2), "5_qblock", random.randint(0, height - 1), random.choice([True, False])),
-            (random.randint(1, width - 2), "6_stairs", random.randint(1, height - 4), -1),
+            (random.randint(1, width - 2), "6_stairs", random.randint(1, height - 6), -1),
             (random.randint(1, width - 2), "7_pipe", random.randint(1, 3))
         ]) for i in range(elt_count)]
         return Individual_DE(g)
